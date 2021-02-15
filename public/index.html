@@ -1,1 +1,72 @@
+﻿<!DOCTYPE html>
 
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+			integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+			crossorigin=""/>
+		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+			integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+			crossorigin="">
+		</script>
+		<script src="/socket.io/socket.io.js"></script>
+		<style>
+			html,body, #mapid { 
+				position: relative;
+				height: 100%;
+				margin: 0;
+				padding: 0;           
+			}
+			#closeConButton{
+				position: absolute;
+				bottom: 0;
+				right: 45px;
+				z-index: 401;
+			}
+    </style>
+</head>
+<body>
+<input type="button" value="Close connection" id="closeConButton">
+<div id="mapid"></div>
+
+<script type="text/javascript">
+	var mymap = L.map('mapid').setView([36.635, 13.623], 6);
+	var tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+	var tiles = L.tileLayer(tileUrl);
+	tiles.addTo(mymap);
+
+	var socket = io();
+	socket.on('ship data', function(data) {
+		console.log('Conected')
+    const cord  = data.map(d => {
+			return {
+				lat: d.latitude,
+				lon: d.longitude
+			}
+		})
+
+		cord.forEach(element => {
+				
+			var lat = element.lat;
+			var lon = element.lon;
+
+			var circle = L.circle([lat,lon],{
+				color: 'gray',
+				fillColor: 'gray',
+				fillOpacity:0.5,
+				radius: 800,
+				weight:3,
+			}).addTo(mymap);
+			var coords = new L.LatLng(lat , lon);
+			
+
+			circle.setLatLng(coords);
+			circle.bindPopup(`${element.name}`);                   
+		});   
+  });
+
+</script>
+</body>
+</html>
